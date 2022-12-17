@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -47,18 +49,61 @@ func deleteMusic(w http.ResponseWriter, r *http.Request) {
 
 	}
 
+	json.NewEncoder(w).Encode(Musics)
+
 }
 
 func getMusic(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "Application/json")
+	params := mux.Vars(r)
+
+	for _, item := range Musics {
+		if item.ID == params["id"] {
+
+			json.NewEncoder(w).Encode(item)
+			return
+
+		}
+
+	}
 
 }
 
-func createMusic() {
+func createMusic(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var music Music
+
+	_ = json.NewDecoder(r.Body).Decode(&music)
+	music.ID = strconv.Itoa(rand.Intn(1000000000))
+	Musics = append(Musics, music)
+
+	json.NewEncoder(w).Encode(music)
 
 }
 
-func updateMusic() {
+func updateMusic(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+
+	for index, item := range Musics {
+		if item.ID == params["id"] {
+			Musics = append(Musics[:index], Musics[index+1:]...)
+
+			var music Music
+
+			_ = json.NewDecoder(r.Body).Decode(&music)
+			music.ID = params["id"]
+
+			Musics = append(Musics, music)
+
+			json.NewEncoder(w).Encode(music)
+
+			return
+
+		}
+	}
 
 }
 
